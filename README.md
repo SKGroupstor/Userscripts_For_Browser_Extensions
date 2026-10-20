@@ -2,7 +2,7 @@
 
 Userscripts for the [Stay](https://apps.apple.com/app/stay-for-safari/id1591620171) browser extension (Safari on iOS/macOS) and Microsoft Edge.
 
-All scripts in `scripts/` use `@grant none` (no `GM_*` APIs), so they work in Stay, Tampermonkey and Violentmonkey. Floating buttons stack up the **left** edge of the screen so they don't overlap the right-side panels of the original video tools.
+Most scripts in `scripts/` use `@grant none` (no `GM_*` APIs), so they work in Stay, Tampermonkey and Violentmonkey. The two that need to remember data across sites (`sk-product-glossary`, `sk-form-autofill`) use `GM_getValue` / `GM_setValue`. Floating buttons stack up the **left** edge of the screen so they don't overlap the right-side panels of the original video tools.
 
 ## Install
 
@@ -10,6 +10,24 @@ In Stay, add a script from URL using the raw link, e.g.
 `https://raw.githubusercontent.com/SKGroupstor/Stay_Browser_Extension_Scripts/main/scripts/sk-dark-mode.user.js`
 
 Folders: `scripts/` (general tools), `scripts/sites/` (site-specific helpers), `scripts/downloaders/` (video / file / image scrapers).
+
+## Productivity (`scripts/`)
+
+| Script | What it does |
+| --- | --- |
+| `sk-product-glossary` | Save a product (Name, Model, Price, Currency, Date, URL) from any site with one tap. Auto-detects the fields (Amazon, JSON-LD, page text), lets you correct them or use selected text, flags price changes vs. earlier saves, has quick search, and syncs rows to a Google Sheet |
+| `sk-form-autofill` | Tap-to-fill business/contact/shipping details from named profiles. Never fills passwords, card, bank or ID-number fields; skips hidden fields; never submits |
+
+### Product glossary -> Google Sheet setup
+
+1. Create a Google Form with 7 short-answer questions titled exactly: `Name`, `Model`, `Price`, `Currency`, `Date`, `URL`, `Site`.
+2. In the Form: **Responses** -> **Link to Sheets**. That spreadsheet is where you view everything.
+3. Form menu -> **Get pre-filled link**, type each question's own title as its answer, **Get link**, copy it.
+4. In the glossary: star button -> **Setup** -> **Connect Google Form** -> paste the link.
+
+Alternative: **Use a webhook instead** with a Zapier "Catch Hook" (-> Google Sheets "Create Spreadsheet Row") or a Make webhook. Fields sent: `name, model, price, currency, date, url, site`.
+
+Products are always stored on the device first; unsynced ones show a hollow dot and can be synced from the Glossary tab. Copy all (TSV) and Export CSV are also there.
 
 ## General tools (`scripts/`)
 
