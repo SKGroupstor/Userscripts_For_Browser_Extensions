@@ -9,7 +9,9 @@ All scripts in `scripts/` use `@grant none` (no `GM_*` APIs), so they work in St
 In Stay, add a script from URL using the raw link, e.g.
 `https://raw.githubusercontent.com/SKGroupstor/Stay_Browser_Extension_Scripts/main/scripts/sk-dark-mode.user.js`
 
-## Scripts
+Folders: `scripts/` (general tools), `scripts/sites/` (site-specific helpers), `scripts/downloaders/` (video / file / image scrapers).
+
+## General tools (`scripts/`)
 
 | Script | What it does |
 | --- | --- |
@@ -28,5 +30,31 @@ In Stay, add a script from URL using the raw link, e.g.
 | `sk-word-count` | Word count and reading time for page or selection |
 | `sk-hide-sticky` | Hides/restores fixed and sticky overlays |
 | `sk-youtube-ad-skipper` | Skips YouTube video ads |
+
+## Site helpers (`scripts/sites/`)
+
+| Script | Sites | What it does |
+| --- | --- | --- |
+| `sk-woocommerce-admin` | Any WooCommerce `/wp-admin/` | Quick-nav (Orders, Products, Coupons, Analytics, Settings, Status...) and, on order screens, copy shipping / billing address and an order summary |
+| `sk-wordpress-admin` | Any WordPress `/wp-admin/` | Quick-nav, Ctrl/Cmd+S to save in classic editor / WC product screens, collapsible admin notices, Remember Me ticked on login |
+| `sk-supplier-product-helper` | amerex-fire.com, biz.amerex-fire.com, herbertwilliams.com, Safety Plus Pro | Reads name / SKU / price / stock (JSON-LD first, page text as fallback); copy a spreadsheet row, Markdown, or the page's PDF links |
+| `sk-amazon-product-helper` | amazon.ca, amazon.com | ASIN, price, seller, stock; copy row / clean `/dp/` link; open same ASIN on the other marketplace |
+| `sk-fedex-tracking-helper` | fedex.com | Paste or scan tracking numbers, track up to 30 at once, recent list |
+| `sk-canadapost-helper` | canadapost-postescanada.ca | Tracking number links and a postal-code formatter / validator |
+| `sk-merchant-center-helper` | merchants.google.com | Account-preserving quick-nav and copy visible table as TSV (read-only) |
+
+These helpers read the live page structure, so a site redesign can break a selector. Each script's header notes its assumptions. The Safety Plus Pro domain in `sk-supplier-product-helper` is a placeholder - edit the `@match` lines if it differs.
+
+## Downloaders (`scripts/downloaders/`)
+
+| Script | What it does |
+| --- | --- |
+| `sk-html-video-download` | Lists each `<video>` on the page, downloads with a progress readout; says so when a player is stream-only |
+| `sk-video-sniffer-download` | Watches fetch / XHR / resource timing (including iframes) for video and audio files and stream manifests |
+| `sk-video-scraper` | Finds video files on **this page** or **crawls the whole site** |
+| `sk-file-scraper` | Same for PDFs, Office docs, archives, CAD files |
+| `sk-image-scraper` | Same for images, including lazy-loaded / srcset / background images, with a full-size upgrade for WordPress thumbnails |
+
+Site crawls stay on the current domain, read `robots.txt` and the sitemap, skip login / cart / checkout / admin URLs, fetch sequentially with a short delay, and are capped (default 40 pages, max 300). Only use them on sites you own or have permission to copy from. DRM-protected streams (and HLS/DASH manifests as a single file) can't be saved; the sniffer lists manifest URLs so you can use a dedicated tool.
 
 The original scripts (All In One Video Tool, Universal Speed Controller, Picture-In-Picture, etc.) remain in the repo root.
