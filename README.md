@@ -1,4 +1,6 @@
-# Stay_Browser_Extension_Scripts
+# Userscripts_For_Browser_Extensions
+
+(Formerly `Stay_Browser_Extension_Scripts`.)
 
 Userscripts for the [Stay](https://apps.apple.com/app/stay-for-safari/id1591620171) browser extension (Safari on iOS/macOS) and Microsoft Edge. They also run in Violentmonkey / Tampermonkey on Chrome and Edge.
 
@@ -8,8 +10,7 @@ Most scripts in `scripts/` use `@grant none` (no `GM_*` APIs). The scripts that 
 
 ## Install
 
-In Stay, add a script from URL using the raw link, e.g.
-`https://raw.githubusercontent.com/SKGroupstor/Stay_Browser_Extension_Scripts/main/scripts/sk-dark-mode.user.js`
+This repo is **private**, so raw links don't work. Open the file on GitHub, click **Copy raw file**, then in Violentmonkey click **+** -> **New** and paste (Stay: use its built-in script editor). To update a script, open it in the editor, select all, paste the new version, and save. Violentmonkey sync (OneDrive) then copies it to your other profiles and devices.
 
 Folders: `scripts/` (general tools), `scripts/sites/` (site-specific helpers), `scripts/downloaders/` (video / file / image scrapers).
 
@@ -60,12 +61,16 @@ Products are always stored on the device first; unsynced ones show a hollow dot 
 | `sk-wordpress-admin` | Any WordPress `/wp-admin/` | Quick-nav, Ctrl/Cmd+S to save in classic editor / WC product screens, collapsible admin notices, Remember Me ticked on login |
 | `sk-supplier-product-helper` | amerex-fire.com, biz.amerex-fire.com, herbertwilliams.com, Safety Plus Pro | Reads name / SKU / price / stock (JSON-LD first, page text as fallback); copy a spreadsheet row, Markdown, or the page's PDF links |
 | `sk-amazon-product-helper` | amazon.ca, amazon.com | ASIN, price, seller, stock; copy row / clean `/dp/` link; open same ASIN on the other marketplace |
+| `sk-seller-central-order-copy` | sellercentral.amazon.ca / .com order details | **Ship** button: copy buyer name, address (or one line), phone (or digits only) and item(s); Copy all, or a spreadsheet row. Read-only |
 | `sk-fedex-tracking-helper` | fedex.com | Paste or scan tracking numbers, track up to 30 at once, recent list |
 | `sk-canadapost-helper` | canadapost-postescanada.ca | Tracking number links and a postal-code formatter / validator |
 | `sk-canadapost-to-seller-central` | Canada Post + sellercentral.amazon.ca / .com | **CP#** on the label page grabs the tracking number with all spaces removed; **Trk** on Confirm Shipment fills the Tracking ID field. Manual pastes into a tracking field are also stripped of spaces. Never submits the shipment |
+| `sk-canadapost-label-pdf` | est-oee.canadapost-postescanada.ca label PDFs | **PDF#** reads the tracking number out of the label PDF (pdf.js), removes the spaces and copies it to the clipboard |
 | `sk-merchant-center-helper` | merchants.google.com | Account-preserving quick-nav and copy visible table as TSV (read-only) |
 
 These helpers read the live page structure, so a site redesign can break a selector. Each script's header notes its assumptions. The Safety Plus Pro domain in `sk-supplier-product-helper` is a placeholder - edit the `@match` lines if it differs.
+
+Script names avoid special characters (`>`, `#`) so cloud sync file names are accepted.
 
 ## Downloaders (`scripts/downloaders/`)
 
