@@ -1,8 +1,8 @@
 # Stay_Browser_Extension_Scripts
 
-Userscripts for the [Stay](https://apps.apple.com/app/stay-for-safari/id1591620171) browser extension (Safari on iOS/macOS) and Microsoft Edge.
+Userscripts for the [Stay](https://apps.apple.com/app/stay-for-safari/id1591620171) browser extension (Safari on iOS/macOS) and Microsoft Edge. They also run in Violentmonkey / Tampermonkey on Chrome and Edge.
 
-Most scripts in `scripts/` use `@grant none` (no `GM_*` APIs), so they work in Stay, Tampermonkey and Violentmonkey. The two that need to remember data across sites (`sk-product-glossary`, `sk-form-autofill`) use `GM_getValue` / `GM_setValue`. Floating buttons stack up the **left** edge of the screen so they don't overlap the right-side panels of the original video tools.
+Most scripts in `scripts/` use `@grant none` (no `GM_*` APIs). The scripts that need to remember data across sites (`sk-product-glossary`, `sk-form-autofill`, `sk-canadapost-to-seller-central`) use `GM_getValue` / `GM_setValue`. Floating buttons stack up the **left** edge of the screen so they don't overlap the right-side panels of the original video tools.
 
 ## Install
 
@@ -59,6 +59,7 @@ Products are always stored on the device first; unsynced ones show a hollow dot 
 | `sk-amazon-product-helper` | amazon.ca, amazon.com | ASIN, price, seller, stock; copy row / clean `/dp/` link; open same ASIN on the other marketplace |
 | `sk-fedex-tracking-helper` | fedex.com | Paste or scan tracking numbers, track up to 30 at once, recent list |
 | `sk-canadapost-helper` | canadapost-postescanada.ca | Tracking number links and a postal-code formatter / validator |
+| `sk-canadapost-to-seller-central` | Canada Post + sellercentral.amazon.ca / .com | **CP#** on the label page grabs the tracking number with all spaces removed; **Trk** on Confirm Shipment fills the Tracking ID field. Manual pastes into a tracking field are also stripped of spaces. Never submits the shipment |
 | `sk-merchant-center-helper` | merchants.google.com | Account-preserving quick-nav and copy visible table as TSV (read-only) |
 
 These helpers read the live page structure, so a site redesign can break a selector. Each script's header notes its assumptions. The Safety Plus Pro domain in `sk-supplier-product-helper` is a placeholder - edit the `@match` lines if it differs.
