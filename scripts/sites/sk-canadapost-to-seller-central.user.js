@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         SK Canada Post -> Seller Central Tracking #
+// @name         SK Canada Post to Seller Central Tracking No
 // @namespace    skgroups
-// @version      1.1
+// @version      1.2
 // @description  Grab a Canada Post tracking number (spaces removed) from the label page, then fill it into the Tracking ID field on Amazon Seller Central's Confirm Shipment page. Also strips spaces from any tracking number you paste into that field.
 // @match        *://*.canadapost-postescanada.ca/*
 // @match        *://*.canadapost.ca/*
@@ -25,6 +25,7 @@
 //
 // v1.1: the Tracking ID box is now found by its visible "Tracking ID:" label text (Seller Central's
 //       Confirm Shipment page has no tracking-related name/id on the input itself).
+// v1.2: renamed without special characters ("->" and "#") so cloud sync file names are accepted.
 
 (function () {
   'use strict';
