@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         SK Canada Post Label PDF -> Tracking #
+// @name         SK Canada Post Label PDF to Tracking No
 // @namespace    skgroups
-// @version      1.0
+// @version      1.1
 // @description  On a Canada Post label that opens as a PDF, reads the tracking number (PIN) from the PDF, removes the spaces and copies it to the clipboard, ready to paste into Seller Central
 // @match        *://est-oee.canadapost-postescanada.ca/*
 // @match        *://*.canadapost-postescanada.ca/esto-oee/*
@@ -23,6 +23,7 @@
 //  - The PDF reader (pdf.js) is downloaded by your userscript manager when you install this script.
 //  - Reads only the label you have open. Nothing is sent anywhere.
 //  - If the number can't be read, select it in the PDF and copy it manually instead.
+//  - v1.1: renamed without special characters ("->" and "#") so cloud sync file names are accepted.
 
 (function () {
   'use strict';
