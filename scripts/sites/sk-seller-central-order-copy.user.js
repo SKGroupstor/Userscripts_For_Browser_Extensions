@@ -1,26 +1,62 @@
 // ==UserScript==
 // @name         SK Seller Central Order Copy
 // @namespace    skgroups
-// @version      1.0
-// @description  On a Seller Central order details page: one-tap copy of the buyer's name, address, phone and item(s), plus Copy All and a spreadsheet row. Read-only; everything stays in your browser.
+// @version      1.1
+// @description  On a Seller Central order details page: one-tap copy of the buyer's name, address, phone and item(s), plus Copy All, a spreadsheet row, and Send to Sheet (adds one row per item to your Google Sheet via a Google Form).
 // @match        *://sellercentral.amazon.ca/orders-v3/order/*
 // @match        *://sellercentral.amazon.com/orders-v3/order/*
 // @noframes
-// @grant        none
+// @grant        GM_getValue
+// @grant        GM_setValue
+// @grant        GM_xmlhttpRequest
+// @grant        unsafeWindow
+// @connect      docs.google.com
 // ==/UserScript==
 
 // HOW IT WORKS
 //  Tap the blue "Ship" button (bottom left). The panel shows what was found in the "Ship to" box and the
 //  order's item table, with a Copy button beside each. "Copy all" gives a block ready for a shipping form
 //  or email. "Copy row" gives tab-separated columns for pasting into a spreadsheet.
-//  The script only reads the page; it sends nothing anywhere and changes nothing on the order.
-//  If a field shows a dash, Seller Central's page layout differs from what the script expects.
+//  "Send to Sheet" adds one row per item to your Google Sheet (set up once with "Sheet setup").
+//  The script only reads the page. Nothing is sent anywhere unless you tap Send to Sheet, and then
+//  only to the Google Form you connected. If a field shows a dash, Seller Central's layout differs
+//  from what the script expects.
+//
+// GOOGLE SHEET SETUP (once, about 5 minutes)
+//  1. Create a Google Form with SHORT ANSWER questions titled exactly (use any of these; skip the ones you don't want):
+//     Order ID, Order Date, Ship By, Name, Address 1, Address 2, City, Province, Postal, Country, Phone,
+//     Item, SKU, ASIN, Qty, Marketplace, URL
+//  2. In the Form: Responses -> Link to Sheets. That spreadsheet is your order log.
+//  3. Form menu (3 dots) -> Get pre-filled link. Type each question's own title as its answer
+//     (Order ID in Order ID, City in City, ...). Click Get link and copy the link.
+//  4. Ship panel -> "Sheet setup" -> paste the link.
+//  5. In the Sheet: select the data (Ctrl/Cmd+A) -> Format -> Convert to table. New rows are added to the
+//     table automatically, with filters, banding and column types.
 
 (function () {
   'use strict';
   if (window.top !== window.self) return;
 
-  const slot = (window.__skFab = (window.__skFab || 0) + 1);
+  const W = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
+  const slot = (W.__skFab = (W.__skFab || 0) + 1);
+
+  const K_TARGET = 'sk_order_sheet_target';
+  const K_SENT = 'sk_order_sheet_sent';
+
+  const store = {
+    get(k, d) {
+      try {
+        const raw = typeof GM_getValue === 'function' ? GM_getValue(k) : localStorage.getItem(k);
+        return raw == null ? d : JSON.parse(raw);
+      } catch { return d; }
+    },
+    set(k, v) {
+      try {
+        const s = JSON.stringify(v);
+        if (typeof GM_setValue === 'function') GM_setValue(k, s); else localStorage.setItem(k, s);
+      } catch {}
+    }
+  };
 
   const clean = s => String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
   const linesOf = el => (el.innerText || '').split('\n').map(s => s.trim()).filter(Boolean);
@@ -40,6 +76,19 @@
       document.body.appendChild(a); a.select();
       const ok = document.execCommand('copy'); a.remove(); return ok;
     }
+  }
+
+  function post(url, body) {
+    const headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
+    if (typeof GM_xmlhttpRequest === 'function') {
+      return new Promise(res => GM_xmlhttpRequest({
+        method: 'POST', url, data: body, headers, timeout: 20000,
+        onload: r => res(r.status >= 200 && r.status < 400),
+        onerror: () => res(false),
+        ontimeout: () => res(false)
+      }));
+    }
+    return fetch(url, { method: 'POST', mode: 'no-cors', headers, body }).then(() => true, () => false);
   }
 
   // ---------- Ship to box ----------
@@ -137,6 +186,79 @@
     return m ? m[1] : '';
   }
 
+  function isoDate(str) {
+    const m = String(str || '').match(/([A-Za-z]{3,9})\.?\s+(\d{1,2}),?\s+(\d{4})/);
+    if (!m) return '';
+    const d = new Date(m[1] + ' ' + m[2] + ', ' + m[3]);
+    return isNaN(d) ? '' : d.toLocaleDateString('en-CA'); // YYYY-MM-DD
+  }
+
+  // ---------- Google Sheet (via Google Form) ----------
+  const FIELD_BY_TITLE = {
+    'order id': 'orderId', 'order date': 'orderDate', 'ship by': 'shipBy', 'name': 'name',
+    'address 1': 'address1', 'address 2': 'address2', 'city': 'city', 'province': 'province',
+    'postal': 'postal', 'country': 'country', 'phone': 'phone', 'item': 'item', 'sku': 'sku',
+    'asin': 'asin', 'qty': 'qty', 'marketplace': 'marketplace', 'url': 'url'
+  };
+
+  function parseFormLink(link) {
+    const u = new URL(String(link).trim());
+    if (u.hostname !== 'docs.google.com' || !/\/forms\//.test(u.pathname)) throw new Error('Not a Google Forms link. Use the full docs.google.com link (not forms.gle).');
+    const map = {};
+    u.searchParams.forEach((v, k) => {
+      if (/^entry\.\d+$/.test(k)) { const f = FIELD_BY_TITLE[v.trim().toLowerCase()]; if (f) map[f] = k; }
+    });
+    if (!map.orderId) throw new Error('Could not find the "Order ID" question. In the pre-filled link, type each question\u2019s own title as its answer.');
+    return { url: u.origin + u.pathname.replace(/\/viewform.*$/, '/formResponse'), map };
+  }
+
+  // One row per item, with the shipping details repeated
+  function buildRows() {
+    const s = getShipTo();
+    if (!s) return null;
+    const text = document.body.innerText || '';
+    const orderDate = isoDate((text.match(/Purchase\s*date:?\s*([^\n]+)/i) || [])[1]);
+    const shipBy = isoDate((text.match(/Ship by:?\s*([^\n]+)/i) || [])[1]);
+    const marketplace = (text.match(/Sales channel:?\s*(Amazon\.[a-z.]+)/i) || [])[1] || (/\.ca$/i.test(location.hostname) ? 'Amazon.ca' : 'Amazon.com');
+    const items = getItems();
+    const base = {
+      orderId: getOrderId(), orderDate, shipBy, name: s.name,
+      address1: s.street[0] || '', address2: s.street.slice(1).join(' '),
+      city: s.city, province: s.prov, postal: s.postal, country: s.country, phone: s.phone,
+      marketplace, url: location.href.split('#')[0]
+    };
+    const list = items.length ? items : [{ name: '', asin: '', sku: '', qty: '' }];
+    return list.map(i => Object.assign({}, base, { item: i.name, sku: i.sku, asin: i.asin, qty: i.qty }));
+  }
+
+  async function sendToSheet(say) {
+    const target = store.get(K_TARGET, null);
+    if (!target) return say('No Google Sheet connected yet. Tap "Sheet setup" first.', true);
+    const rows = buildRows();
+    if (!rows) return say('Couldn\u2019t read the order. Wait for the page to load and try again.', true);
+    const id = rows[0].orderId;
+    const sent = store.get(K_SENT, {});
+    if (id && sent[id] && !confirm('Order ' + id + ' was already sent on ' + sent[id] + '. Send it again (adds duplicate rows)?')) return say('Cancelled. Not sent.', true);
+
+    let ok = 0;
+    for (const r of rows) {
+      const p = new URLSearchParams();
+      Object.keys(target.map).forEach(f => p.set(target.map[f], r[f] == null ? '' : r[f]));
+      if (await post(target.url, p.toString())) ok++;
+    }
+    if (ok === rows.length) {
+      if (id) { sent[id] = new Date().toLocaleDateString('en-CA'); store.set(K_SENT, sent); }
+      say('Sent ' + ok + ' row' + (ok > 1 ? 's' : '') + ' to your Google Sheet \u2713');
+    } else say('Sent ' + ok + ' of ' + rows.length + ' rows. Some failed - check your connection and try again.', true);
+  }
+
+  function sheetSetup(say) {
+    const link = prompt('Paste the full pre-filled link from Google Forms (docs.google.com/forms/...). See the setup steps at the top of this script.');
+    if (!link) return;
+    try { store.set(K_TARGET, parseFormLink(link)); say('Google Sheet connected. Tap Send to Sheet on an order.'); }
+    catch (e) { say(e.message, true); }
+  }
+
   // ---------- UI ----------
   const panel = mk('div', 'position:fixed;left:12px;right:12px;bottom:' + (12 + 50 * (slot - 1) + 50) + 'px;max-width:440px;max-height:75vh;overflow-y:auto;background:#111;color:#fff;border-radius:12px;padding:12px;display:none;z-index:2147483647;font:14px -apple-system,sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.5)');
   panel.setAttribute('data-sk', '1');
@@ -147,11 +269,11 @@
     return b;
   }
 
-  const status = mk('div', 'font-size:12px;color:#34c759;margin-top:8px;min-height:15px');
-  const say = m => { status.textContent = m; };
+  const status = mk('div', 'font-size:12px;color:#34c759;margin-top:8px;min-height:15px;line-height:1.4');
+  const say = (m, warn) => { status.style.color = warn ? '#ff9f0a' : '#34c759'; status.textContent = m; };
   async function doCopy(text, what) {
-    if (!text) return say('Nothing to copy for ' + what + '.');
-    say((await copy(text)) ? 'Copied ' + what + '.' : 'Copy failed (clipboard blocked).');
+    if (!text) return say('Nothing to copy for ' + what + '.', true);
+    say((await copy(text)) ? 'Copied ' + what + '.' : 'Copy failed (clipboard blocked).', false);
   }
 
   function row(label, value, actions) {
@@ -191,21 +313,22 @@
         doCopy(parts + (itemText ? '\n\nItem: ' + itemText.replace(/\n/g, '\nItem: ') : '') + (orderId ? '\nOrder ID: ' + orderId : ''), 'everything');
       }, '#34c759'));
       actions.appendChild(btn('Copy row', () => {
-        const first = items[0] || {};
         const cols = [s.name, s.street[0] || '', s.street.slice(1).join(' '), s.city, s.prov, s.postal, s.country, s.phone,
           items.map(i => i.name).join(' | '), items.map(i => i.sku).join(' | '), items.map(i => i.qty).join(' | '), orderId];
         doCopy(cols.map(c => String(c || '').replace(/[\t\r\n]+/g, ' ')).join('\t'), 'spreadsheet row');
-        void first;
       }, '#0a84ff'));
+      actions.appendChild(btn('Send to Sheet', () => sendToSheet(say), '#ff9500'));
     }
+    actions.appendChild(btn('Sheet setup', () => sheetSetup(say)));
     actions.appendChild(btn('Close', () => { panel.style.display = 'none'; }, '#ff3b30'));
+    const connected = !!store.get(K_TARGET, null);
     panel.append(actions, status);
-    panel.appendChild(mk('div', 'font-size:11px;color:#8e8e93;margin-top:6px', 'Copy row columns: Name, Address 1, Address 2, City, Province, Postal, Country, Phone, Item, SKU, Qty, Order ID.'));
+    panel.appendChild(mk('div', 'font-size:11px;color:#8e8e93;margin-top:6px', 'Google Sheet: ' + (connected ? 'connected' : 'not connected (tap Sheet setup)') + '. Copy row columns: Name, Address 1, Address 2, City, Province, Postal, Country, Phone, Item, SKU, Qty, Order ID.'));
   }
 
   const fab = mk('button', 'position:fixed;left:12px;bottom:' + (12 + 50 * (slot - 1)) + 'px;z-index:2147483647;width:42px;height:42px;border-radius:50%;border:none;background:#0a84ff;color:#fff;font:700 11px -apple-system,sans-serif;opacity:.92;box-shadow:0 2px 8px rgba(0,0,0,.4)', 'Ship');
   fab.setAttribute('data-sk', '1');
-  fab.title = 'Copy buyer name, address, phone and item';
+  fab.title = 'Copy buyer name, address, phone and item, or send to your Google Sheet';
   fab.onclick = () => { if (panel.style.display === 'none') { render(); panel.style.display = 'block'; } else panel.style.display = 'none'; };
 
   document.documentElement.append(panel, fab);
