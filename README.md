@@ -4,6 +4,8 @@ Userscripts for the [Stay](https://apps.apple.com/app/stay-for-safari/id15916201
 
 Most scripts in `scripts/` use `@grant none` (no `GM_*` APIs). The scripts that need to remember data across sites (`sk-product-glossary`, `sk-form-autofill`, `sk-canadapost-to-seller-central`) use `GM_getValue` / `GM_setValue`. Floating buttons stack up the **left** edge of the screen so they don't overlap the right-side panels of the original video tools.
 
+**Print view:** install `sk-hide-in-print` once and every SK button, panel and toast is hidden when you print or save as PDF (all SK UI is tagged `data-sk`).
+
 ## Install
 
 In Stay, add a script from URL using the raw link, e.g.
@@ -17,6 +19,7 @@ Folders: `scripts/` (general tools), `scripts/sites/` (site-specific helpers), `
 | --- | --- |
 | `sk-product-glossary` | Save a product (Name, Model, Price, Currency, Date, URL) from any site with one tap. Auto-detects the fields (Amazon, JSON-LD, page text), lets you correct them or use selected text, flags price changes vs. earlier saves, has quick search, and syncs rows to a Google Sheet |
 | `sk-form-autofill` | Tap-to-fill business/contact/shipping details from named profiles. Never fills passwords, card, bank or ID-number fields; skips hidden fields; never submits |
+| `sk-hide-in-print` | Hides all SK buttons/panels when printing or saving as PDF; also hides them outright on Amazon print-style pages (printable order summary, packing slip, invoice) |
 
 ### Product glossary -> Google Sheet setup
 
