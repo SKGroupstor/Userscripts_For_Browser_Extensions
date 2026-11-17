@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SK Canada Post -> Seller Central Tracking #
 // @namespace    skgroups
-// @version      1.0
+// @version      1.1
 // @description  Grab a Canada Post tracking number (spaces removed) from the label page, then fill it into the Tracking ID field on Amazon Seller Central's Confirm Shipment page. Also strips spaces from any tracking number you paste into that field.
 // @match        *://*.canadapost-postescanada.ca/*
 // @match        *://*.canadapost.ca/*
@@ -16,13 +16,15 @@
 // HOW IT WORKS
 //  On Canada Post:   tap "CP#"  -> finds the tracking number on the page (or uses your selected text),
 //                    removes all spaces, saves it, and copies it to the clipboard.
-//  On Seller Central: tap "Trk" -> pick a saved number -> it fills the Tracking ID field.
+//                    (If the label is a PDF, use the separate sk-canadapost-label-pdf script instead.)
+//  On Seller Central: tap "Trk" -> pick a saved number (or "Paste clipboard") -> it fills the Tracking ID field.
 //                    Pasting a spaced number into a tracking field by hand is also cleaned automatically.
 // Saved numbers are shared between the two sites via GM_getValue/GM_setValue.
 // If your manager lacks GM_*, storage falls back to per-site localStorage and numbers will NOT cross sites
 // (the clipboard copy still works: use "Paste clipboard" on the Seller Central side).
-// If the label is a PDF in the browser's viewer, the page text can't be read: select/copy the number
-// from the PDF, then use "Paste clipboard" on Seller Central (it removes the spaces).
+//
+// v1.1: the Tracking ID box is now found by its visible "Tracking ID:" label text (Seller Central's
+//       Confirm Shipment page has no tracking-related name/id on the input itself).
 
 (function () {
   'use strict';
@@ -60,7 +62,7 @@
   }
 
   function toast(msg, ms) {
-    const t = mk('div', 'position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#111;color:#fff;padding:9px 14px;border-radius:8px;font:14px -apple-system,sans-serif;z-index:2147483647;max-width:85vw;text-align:center', msg);
+    const t = mk('div', 'position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#111;color:#fff;padding:9px 14px;border-radius:8px;font:14px -apple-system,sans-serif;z-index:2147483647;max-width:85vw;text-align:center;white-space:pre-line', msg);
     t.setAttribute('data-sk', '1');
     document.documentElement.appendChild(t);
     setTimeout(() => t.remove(), ms || 3200);
@@ -144,7 +146,7 @@
         panel.textContent = '';
         panel.append(
           mk('div', 'margin-bottom:8px', 'No tracking number found in the page text.'),
-          mk('div', 'font-size:12px;color:#aaa;line-height:1.5', 'Select the number on the page and tap CP# again. If the label is a PDF, copy the number from it, then use "Paste clipboard" on Seller Central.'),
+          mk('div', 'font-size:12px;color:#aaa;line-height:1.5', 'If this label is a PDF, use the PDF# button (sk-canadapost-label-pdf script). Otherwise select the number on the page and tap CP# again, or copy it and use "Paste clipboard" on Seller Central.'),
           btn('Close', () => { panel.style.display = 'none'; }, '#ff3b30')
         );
         panel.style.display = 'block';
@@ -177,8 +179,9 @@
     return out;
   }
 
+  // Attribute-based detection (name / id / placeholder / aria-label / <label for>)
   function desc(el) {
-    let s = [el.name, el.id, el.placeholder, el.getAttribute('aria-label'), el.getAttribute('data-testid'), el.getAttribute('label')].join(' ');
+    let s = [el.name, el.id, el.placeholder, el.getAttribute('aria-label'), el.getAttribute('data-testid'), el.getAttribute('data-test-id'), el.getAttribute('label')].join(' ');
     let n = el;
     for (let i = 0; i < 4; i++) {
       const root = n.getRootNode && n.getRootNode();
@@ -200,13 +203,38 @@
 
   const TRACK_RE = /track/i;
   const NOT_TRACK_RE = /url|link|status|event|history/i;
+  // Visible label text such as "Tracking ID:", "Tracking number", "Tracking #"
+  const LABEL_RE = /^tracking\s*(id|number|no\.?|#)?\s*:?\s*\*?$/i;
 
-  function isTrackingField(el) {
-    if (!el || el.tagName !== 'INPUT') return false;
-    const type = (el.type || 'text').toLowerCase();
-    if (!['text', 'search', 'tel', ''].includes(type)) return false;
+  function okType(el) {
+    return el && el.tagName === 'INPUT' && /^(text|search|tel|)$/i.test(el.type || '');
+  }
+
+  // Text-based detection: find a short element reading "Tracking ID:" and take the first
+  // text input that follows it nearby (Seller Central's input has no tracking-related attributes).
+  function labelFields() {
+    const out = [];
+    deepAll(document).forEach(el => {
+      const tag = el.tagName;
+      if (tag === 'INPUT' || tag === 'SCRIPT' || tag === 'STYLE' || tag === 'OPTION' || el.children.length > 2) return;
+      const t = (el.textContent || '').trim();
+      if (!t || t.length > 40 || !LABEL_RE.test(t)) return;
+      let p = el;
+      for (let i = 0; i < 6 && p; i++) {
+        p = p.parentElement || (p.getRootNode && p.getRootNode().host) || null;
+        if (!p) break;
+        const inp = [...p.querySelectorAll('input')].find(x => okType(x) && (el.compareDocumentPosition(x) & Node.DOCUMENT_POSITION_FOLLOWING));
+        if (inp) { out.push(inp); break; }
+      }
+    });
+    return out;
+  }
+
+  function isTrackingField(el, lf) {
+    if (!okType(el)) return false;
     const d = desc(el);
-    return TRACK_RE.test(d) && !NOT_TRACK_RE.test(d);
+    if (TRACK_RE.test(d) && !NOT_TRACK_RE.test(d)) return true;
+    return (lf || labelFields()).includes(el);
   }
 
   function visible(el) {
@@ -218,7 +246,14 @@
   }
 
   function trackingFields() {
-    return deepAll(document).filter(el => el.tagName === 'INPUT' && isTrackingField(el) && visible(el));
+    const lf = labelFields();
+    const seen = new Set();
+    return deepAll(document).filter(el => {
+      if (el.tagName !== 'INPUT' || seen.has(el)) return false;
+      if (!isTrackingField(el, lf) || !visible(el)) return false;
+      seen.add(el);
+      return true;
+    });
   }
 
   let lastTrack = null;
@@ -252,7 +287,7 @@
     const el = pickTarget();
     if (!el) {
       await copy(value);
-      say('No tracking field found on this page. Open the Confirm Shipment page for the order. The number was copied to your clipboard.');
+      say('No Tracking ID box found on this page. Open the order\u2019s Confirm Shipment page. The number was copied to your clipboard.');
       return false;
     }
     setNative(el, value);
@@ -285,7 +320,7 @@
     panel.textContent = '';
     const q = queue();
     panel.appendChild(mk('div', 'font-weight:600;margin-bottom:6px', 'Tracking numbers'));
-    if (!q.length) panel.appendChild(mk('div', 'font-size:12px;color:#aaa;margin-bottom:6px', 'None saved yet. Tap CP# on the Canada Post label page, or use Paste clipboard below.'));
+    if (!q.length) panel.appendChild(mk('div', 'font-size:12px;color:#aaa;margin-bottom:6px', 'None saved yet. Tap CP# / PDF# on the Canada Post label page, or use Paste clipboard below.'));
     q.slice(0, 12).forEach(x => {
       const row = mk('div', 'display:flex;align-items:center;gap:6px;margin:3px 0');
       row.appendChild(btn((x.used ? '\u2713 ' : '') + x.n, () => fillNumber(x.n, say), x.used ? '#2c2c2e' : '#0a84ff'));
