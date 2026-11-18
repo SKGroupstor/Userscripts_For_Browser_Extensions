@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SK Seller Central Order Copy
 // @namespace    skgroups
-// @version      1.1
+// @version      1.2
 // @description  On a Seller Central order details page: one-tap copy of the buyer's name, address, phone and item(s), plus Copy All, a spreadsheet row, and Send to Sheet (adds one row per item to your Google Sheet via a Google Form).
 // @match        *://sellercentral.amazon.ca/orders-v3/order/*
 // @match        *://sellercentral.amazon.com/orders-v3/order/*
@@ -17,21 +17,13 @@
 //  Tap the blue "Ship" button (bottom left). The panel shows what was found in the "Ship to" box and the
 //  order's item table, with a Copy button beside each. "Copy all" gives a block ready for a shipping form
 //  or email. "Copy row" gives tab-separated columns for pasting into a spreadsheet.
-//  "Send to Sheet" adds one row per item to your Google Sheet (set up once with "Sheet setup").
+//  "Send to Sheet" adds one row per item to the "Amazon Order Shipments (Responses)" Google Sheet.
 //  The script only reads the page. Nothing is sent anywhere unless you tap Send to Sheet, and then
-//  only to the Google Form you connected. If a field shows a dash, Seller Central's layout differs
-//  from what the script expects.
+//  only to the Google Form named below.
 //
-// GOOGLE SHEET SETUP (once, about 5 minutes)
-//  1. Create a Google Form with SHORT ANSWER questions titled exactly (use any of these; skip the ones you don't want):
-//     Order ID, Order Date, Ship By, Name, Address 1, Address 2, City, Province, Postal, Country, Phone,
-//     Item, SKU, ASIN, Qty, Marketplace, URL
-//  2. In the Form: Responses -> Link to Sheets. That spreadsheet is your order log.
-//  3. Form menu (3 dots) -> Get pre-filled link. Type each question's own title as its answer
-//     (Order ID in Order ID, City in City, ...). Click Get link and copy the link.
-//  4. Ship panel -> "Sheet setup" -> paste the link.
-//  5. In the Sheet: select the data (Ctrl/Cmd+A) -> Format -> Convert to table. New rows are added to the
-//     table automatically, with filters, banding and column types.
+// v1.2: the Google Form connection is built in (DEFAULT_TARGET below), so every browser profile and device
+//       that has this script is already connected. "Sheet setup" is only needed to point at a DIFFERENT form.
+//       If you ever recreate the Form, replace the ids in DEFAULT_TARGET (or use Sheet setup on each device).
 
 (function () {
   'use strict';
@@ -42,6 +34,18 @@
 
   const K_TARGET = 'sk_order_sheet_target';
   const K_SENT = 'sk_order_sheet_sent';
+
+  // Form "Amazon Order Shipments" (ash@teslafiresystems.com) -> Sheet "Amazon Order Shipments (Responses)"
+  const DEFAULT_TARGET = {
+    url: 'https://docs.google.com/forms/d/e/1FAIpQLSeZ7Py11rOruc7DPZpZ9CKMyKk1I6ZX3g7v7Py24PowlyYCpw/formResponse',
+    map: {
+      orderId: 'entry.1761767680', orderDate: 'entry.682244264', shipBy: 'entry.1069012913', name: 'entry.699593144',
+      address1: 'entry.733443001', address2: 'entry.670525414', city: 'entry.1470902197', province: 'entry.2074475451',
+      postal: 'entry.1719633504', country: 'entry.2118286950', phone: 'entry.1049513641', item: 'entry.1285618825',
+      sku: 'entry.117362381', asin: 'entry.1170669050', qty: 'entry.2082464801', marketplace: 'entry.460921656',
+      url: 'entry.1677730892'
+    }
+  };
 
   const store = {
     get(k, d) {
@@ -57,6 +61,8 @@
       } catch {}
     }
   };
+
+  const getTarget = () => store.get(K_TARGET, null) || DEFAULT_TARGET;
 
   const clean = s => String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
   const linesOf = el => (el.innerText || '').split('\n').map(s => s.trim()).filter(Boolean);
@@ -232,13 +238,12 @@
   }
 
   async function sendToSheet(say) {
-    const target = store.get(K_TARGET, null);
-    if (!target) return say('No Google Sheet connected yet. Tap "Sheet setup" first.', true);
+    const target = getTarget();
     const rows = buildRows();
     if (!rows) return say('Couldn\u2019t read the order. Wait for the page to load and try again.', true);
     const id = rows[0].orderId;
     const sent = store.get(K_SENT, {});
-    if (id && sent[id] && !confirm('Order ' + id + ' was already sent on ' + sent[id] + '. Send it again (adds duplicate rows)?')) return say('Cancelled. Not sent.', true);
+    if (id && sent[id] && !confirm('Order ' + id + ' was already sent on ' + sent[id] + ' (from this browser). Send it again (adds duplicate rows)?')) return say('Cancelled. Not sent.', true);
 
     let ok = 0;
     for (const r of rows) {
@@ -253,9 +258,9 @@
   }
 
   function sheetSetup(say) {
-    const link = prompt('Paste the full pre-filled link from Google Forms (docs.google.com/forms/...). See the setup steps at the top of this script.');
+    const link = prompt('Optional: paste a different Google Form pre-filled link to send to another sheet. (Leave empty to keep the built-in connection.)');
     if (!link) return;
-    try { store.set(K_TARGET, parseFormLink(link)); say('Google Sheet connected. Tap Send to Sheet on an order.'); }
+    try { store.set(K_TARGET, parseFormLink(link)); say('Now sending to the Google Form you pasted (this browser only).'); }
     catch (e) { say(e.message, true); }
   }
 
@@ -319,11 +324,11 @@
       }, '#0a84ff'));
       actions.appendChild(btn('Send to Sheet', () => sendToSheet(say), '#ff9500'));
     }
-    actions.appendChild(btn('Sheet setup', () => sheetSetup(say)));
+    actions.appendChild(btn('Other sheet\u2026', () => sheetSetup(say)));
     actions.appendChild(btn('Close', () => { panel.style.display = 'none'; }, '#ff3b30'));
-    const connected = !!store.get(K_TARGET, null);
+    const custom = !!store.get(K_TARGET, null);
     panel.append(actions, status);
-    panel.appendChild(mk('div', 'font-size:11px;color:#8e8e93;margin-top:6px', 'Google Sheet: ' + (connected ? 'connected' : 'not connected (tap Sheet setup)') + '. Copy row columns: Name, Address 1, Address 2, City, Province, Postal, Country, Phone, Item, SKU, Qty, Order ID.'));
+    panel.appendChild(mk('div', 'font-size:11px;color:#8e8e93;margin-top:6px', 'Send to Sheet: ' + (custom ? 'custom form (this browser)' : 'Amazon Order Shipments (built in)') + '. Copy row columns: Name, Address 1, Address 2, City, Province, Postal, Country, Phone, Item, SKU, Qty, Order ID.'));
   }
 
   const fab = mk('button', 'position:fixed;left:12px;bottom:' + (12 + 50 * (slot - 1)) + 'px;z-index:2147483647;width:42px;height:42px;border-radius:50%;border:none;background:#0a84ff;color:#fff;font:700 11px -apple-system,sans-serif;opacity:.92;box-shadow:0 2px 8px rgba(0,0,0,.4)', 'Ship');
