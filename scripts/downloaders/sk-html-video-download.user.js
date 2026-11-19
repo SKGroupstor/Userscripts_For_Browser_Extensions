@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         SK HTML Video Download
 // @namespace    skgroups
-// @version      1.0
-// @description  Lists every <video> on the page and downloads the file with a progress readout. Handles direct files and blob: URLs; tells you when a video is stream-only.
+// @version      1.1
+// @description  Lists every <video> on the page and downloads the file with a progress readout. Handles direct files and blob: URLs; tells you when a video is stream-only. The button only appears on video playback pages.
 // @match        *://*/*
 // @noframes
 // @grant        none
@@ -11,6 +11,20 @@
 (function () {
   'use strict';
   if (window.top !== window.self) return;
+
+  // ----- show the widget only on a real video playback page -----
+  // A page counts as a video page if its address matches one of these patterns (tested against path + query),
+  // OR it has a large video player on screen. Edit the list if your sites use a different address.
+  const VIDEO_URL_PATTERNS = [/view_?video/i, /[?&]viewkey=/i, /\/watch(\/|\?|$)/i, /\/video\/[^/?#]+/i, /\/embed\//i];
+
+  function isVideoPage() {
+    const url = location.pathname + location.search;
+    if (VIDEO_URL_PATTERNS.some(re => re.test(url))) return true;
+    const vw = window.innerWidth || 800;
+    const big = el => { const r = el.getBoundingClientRect(); return r.width >= 240 && r.width >= vw * 0.4 && r.height >= 120; };
+    if ([...document.querySelectorAll('video')].some(big)) return true;
+    return [...document.querySelectorAll('iframe[src*="player" i],iframe[src*="embed" i]')].some(big);
+  }
 
   const slot = (window.__skFab = (window.__skFab || 0) + 1);
 
@@ -113,5 +127,13 @@
   const fab = mk('button', 'position:fixed;left:12px;bottom:' + (12 + 50 * (slot - 1)) + 'px;z-index:2147483647;width:42px;height:42px;border-radius:50%;border:none;background:#111;color:#fff;font:600 11px -apple-system,sans-serif;opacity:.75;box-shadow:0 2px 8px rgba(0,0,0,.4)', 'VID\u2B07');
   fab.setAttribute('data-sk', '1');
   fab.onclick = () => { render(); panel.style.display = 'flex'; };
-  document.documentElement.append(fab, panel);
+
+  // Add the widget only while this is a video playback page (re-checked as the page loads / navigates)
+  function syncUI() {
+    const on = isVideoPage();
+    if (on && !fab.isConnected) document.documentElement.append(fab, panel);
+    else if (!on && fab.isConnected) { fab.remove(); panel.remove(); panel.style.display = 'none'; }
+  }
+  syncUI();
+  setInterval(syncUI, 1500);
 })();
