@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         SK Video Sorter
 // @namespace    skgroups
-// @version      1.0
-// @description  Re-sort any video/thumbnail list on any website by title, duration, views, date, rating or episode number, overriding the site's own sort. Each page can have its own sort (or one default per site), and it is re-applied when the list reloads.
+// @version      1.1
+// @description  Re-sort any video/thumbnail list on any website by title, duration, views, date, rating or episode number, overriding the site's own sort. Each page can have its own sort (or one default per site). Endless-scroll pages: loads everything from top to bottom first, then sorts the whole list.
 // @match        *://*/*
 // @noframes
 // @grant        GM_getValue
@@ -16,19 +16,28 @@
 //  3. "Remember for" decides where the choice is saved: this page, the whole site, or not at all.
 //     Next time you open that page the sort is applied automatically. Another page can use a different sort.
 //  4. If it sorts the wrong list (e.g. "related videos"), tap "Pick list", then tap any video in the list you want.
-//  5. Sites that load more videos as you scroll or by "next page": tap "Load all" to load them first.
+//
+// ENDLESS-SCROLL PAGES (the list grows as you scroll and the address never changes)
+//  Tick "Endless-scroll page: load everything first, then sort". The script then scrolls the page from the
+//  top to the very bottom for you (and clicks any "Load more" button) behind a progress screen, until nothing
+//  new appears. Only then does it sort the complete list and jump back to the top. With "Remember for" set,
+//  this happens automatically each time you open that page. Tap "Stop and sort what's loaded" at any time.
+//  A sort can only see videos that exist on the page, which is why they must all be loaded first.
+//  Very long lists are capped (MAX_ITEMS / MAX_MINUTES below) so a page can't run away.
 //
 // HOW IT WORKS
 //  It finds the repeated video cards, reads each card's title, duration, view count, age/date and rating
 //  from the text on the card, and reorders the cards on the page. The site's own sort menu keeps working;
 //  this script re-applies your order on top whenever the list changes. Nothing is sent anywhere.
-//  It can only sort what is on the page, and fields a card doesn't show (e.g. no view count) sort last.
-//  Pages that rebuild their list constantly (some single-page apps) may fight the sort; the script pauses
-//  itself if that happens.
+//  Fields a card doesn't show (e.g. no view count) sort last. Pages that rebuild their list constantly, or
+//  that only keep the visible cards on the page ("virtualized" lists), can't be fully sorted.
 
 (function () {
   'use strict';
   if (window.top !== window.self) return;
+
+  const MAX_ITEMS = 3000;   // stop loading after this many videos
+  const MAX_MINUTES = 5;    // stop loading after this long
 
   const W = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
   const slot = (W.__skFab = (W.__skFab || 0) + 1);
@@ -51,6 +60,7 @@
   const getCfg = () => { const c = store.get(KEY, null) || {}; c.pages = c.pages || {}; c.sites = c.sites || {}; return c; };
   const pageKey = () => location.hostname + location.pathname.replace(/\/+$/, '');
   const siteKey = () => location.hostname;
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
 
   const METHODS = [
     ['orig', 'Site order (original)'],
@@ -271,11 +281,95 @@
     if (st) showStats(st);
   }, 1000);
 
+  // ---------- loading everything (endless-scroll pages) ----------
+  const MORE_RE = /^(load more|show more|view more|see more|more videos|load more videos|show more videos|more results|load more results)$/i;
+
+  function clickLoadMore() {
+    document.querySelectorAll('button,[role="button"],a[href="#"],a[href^="javascript"],[class*="load-more" i],[class*="loadmore" i]').forEach(el => {
+      if (el.closest('[data-sk]') || !el.offsetParent || el.disabled) return;
+      const t = clean(el.textContent);
+      if (t.length < 40 && MORE_RE.test(t)) { try { el.click(); } catch {} }
+    });
+  }
+
+  function scrollAllToBottom(nudge) {
+    if (nudge) window.scrollBy(0, -400);
+    window.scrollTo(0, document.documentElement.scrollHeight);
+    let p = state.container ? state.container.parentElement : null;
+    while (p && p !== document.body) {
+      if (p.scrollHeight > p.clientHeight + 40 && /(auto|scroll)/.test(getComputedStyle(p).overflowY)) p.scrollTop = p.scrollHeight;
+      p = p.parentElement;
+    }
+  }
+
+  function showOverlay(message) {
+    const o = mk('div', 'position:fixed;inset:0;background:rgba(0,0,0,.84);z-index:2147483645;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font:600 16px -apple-system,sans-serif;gap:12px;text-align:center;padding:20px');
+    o.setAttribute('data-sk', '1');
+    const msg = mk('div', '', message || 'Loading everything\u2026');
+    const sub = mk('div', 'font-size:13px;font-weight:400;color:#ccc');
+    const stop = mk('button', 'padding:10px 18px;border:none;border-radius:8px;background:#ff3b30;color:#fff;font-size:14px', 'Stop and sort what\u2019s loaded');
+    o.append(msg, sub, stop);
+    document.documentElement.appendChild(o);
+    return { stop, set: (m, s) => { msg.textContent = m; sub.textContent = s || ''; }, close: () => o.remove() };
+  }
+
+  // Scrolls top-to-bottom, clicking "Load more" buttons, until nothing new appears.
+  async function loadEverything(ov) {
+    const t0 = Date.now();
+    let stopped = false;
+    ov.stop.onclick = () => { stopped = true; };
+    const countNow = () => {
+      const c = state.container && state.container.isConnected ? state.container : resolveContainer();
+      if (c) state.container = c;
+      return c ? itemsOf(c).length : 0;
+    };
+    let last = -1, stale = 0, reason = 'done';
+    window.scrollTo(0, 0);
+    await sleep(300);
+    for (let i = 0; i < 800; i++) {
+      if (stopped) { reason = 'stopped'; break; }
+      if (Date.now() - t0 > MAX_MINUTES * 60000) { reason = 'time limit'; break; }
+      const n = countNow();
+      if (n >= MAX_ITEMS) { reason = 'item limit'; break; }
+      if (last >= 0 && n < last - 3) { reason = 'virtualized list'; break; } // cards are being removed as we scroll
+      last = Math.max(last, n);
+      ov.set('Loading everything\u2026 ' + n + ' videos found', Math.round((Date.now() - t0) / 1000) + 's \u00B7 you can tap Stop to sort what is loaded');
+      const h0 = document.documentElement.scrollHeight;
+      scrollAllToBottom(stale > 0);
+      clickLoadMore();
+      let grew = false;
+      for (let w = 0; w < 10 && !stopped; w++) {
+        await sleep(250);
+        if (countNow() > n || document.documentElement.scrollHeight > h0) { grew = true; break; }
+      }
+      if (grew) { stale = 0; await sleep(300); } else { stale++; if (stale >= 2) break; }
+    }
+    return { count: countNow(), reason };
+  }
+
+  async function loadThenSort(method, existingOverlay) {
+    state.paused = true;
+    const ov = existingOverlay || showOverlay();
+    let res;
+    try { res = await loadEverything(ov); }
+    catch (e) { res = { count: 0, reason: 'error' }; }
+    ov.set('Sorting ' + res.count + ' videos\u2026', '');
+    await sleep(60);
+    if (!state.container || !state.container.isConnected) state.container = resolveContainer();
+    const st = sortItems(method);
+    ov.close();
+    state.method = method;
+    state.paused = false;
+    state.reapplies = [];
+    window.scrollTo(0, 0);
+    return { st, res };
+  }
+
   // ---------- saving ----------
-  function saveChoice(method, scope) {
+  function saveChoice(method, scope, loadAll) {
     if (scope === 'none') return;
     const c = getCfg();
-    const rec = { method, container: state.containerSel || null };
+    const rec = { method, container: state.containerSel || null, loadAll: !!loadAll };
     if (scope === 'site') c.sites[siteKey()] = rec; else c.pages[pageKey()] = rec;
     store.set(KEY, c);
   }
@@ -295,8 +389,9 @@
 
   const FIELD_FOR = { 'dur-long': 'dur', 'dur-short': 'dur', 'views-most': 'views', 'views-least': 'views', 'new': 'age', 'old': 'age', 'rating-high': 'rating', 'rating-low': 'rating', 'num-asc': 'num', 'num-desc': 'num' };
   const FIELD_NAME = { dur: 'a duration', views: 'a view count', age: 'a date or age', rating: 'a rating', num: 'a number in the title' };
+  const REASONS = { 'stopped': 'You stopped loading early, so only what was loaded is sorted.', 'time limit': 'Stopped at the time limit; the list may be longer.', 'item limit': 'Stopped at the item limit; the list may be longer.', 'virtualized list': 'This site only keeps the visible cards on the page, so the whole list can\u2019t be sorted at once.', 'error': 'Loading hit an error.' };
 
-  function showStats(st) {
+  function showStats(st, reason) {
     const f = FIELD_FOR[state.method];
     let msg = st.n + ' videos \u00B7 durations ' + st.dur + ' \u00B7 views ' + st.views + ' \u00B7 dates ' + st.age + ' \u00B7 ratings ' + st.rating;
     let warn = false;
@@ -304,6 +399,7 @@
       warn = true;
       msg += '\nOnly ' + st[f] + ' of ' + st.n + ' show ' + FIELD_NAME[f] + '; the rest sort last.' + (st[f] === 0 ? ' This method won\u2019t work on this page.' : '');
     }
+    if (reason && REASONS[reason]) { warn = true; msg += '\n' + REASONS[reason]; }
     setStatus(msg, warn);
   }
 
@@ -329,33 +425,21 @@
     document.addEventListener('click', handler, true);
   }
 
-  let loading = false;
-  async function loadAll() {
-    if (loading) { loading = false; return; }
-    loading = true;
-    let same = 0, last = -1;
-    for (let i = 0; i < 60 && loading; i++) {
-      window.scrollTo(0, document.documentElement.scrollHeight);
-      await new Promise(r => setTimeout(r, 900));
-      const n = state.container ? itemsOf(state.container).length : document.querySelectorAll('a[href] img').length;
-      setStatus('Loading more\u2026 ' + n + ' items (tap Load all again to stop)');
-      same = n === last ? same + 1 : 0; last = n;
-      if (same >= 2) break;
-    }
-    loading = false;
-    window.scrollTo(0, 0);
-  }
-
   function render() {
     panel.textContent = '';
     const rec = savedRecord();
     panel.appendChild(mk('div', 'font-weight:600;margin-bottom:6px', 'Video Sorter'));
     panel.appendChild(mk('div', 'font-size:11px;color:#8e8e93;margin-bottom:6px',
-      rec ? 'Saved here: ' + ((METHODS.find(m => m[0] === rec.method) || [0, rec.method])[1]) : 'Nothing saved for this page yet.'));
+      rec ? 'Saved here: ' + ((METHODS.find(m => m[0] === rec.method) || [0, rec.method])[1]) + (rec.loadAll ? ' (loads everything first)' : '') : 'Nothing saved for this page yet.'));
 
     const sel = mk('select', 'width:100%;padding:9px;border-radius:6px;border:none;font-size:14px');
     METHODS.forEach(([v, l]) => { const o = mk('option', '', l); o.value = v; if (v === (state.method !== 'orig' ? state.method : (rec && rec.method) || 'new')) o.selected = true; sel.appendChild(o); });
     panel.appendChild(sel);
+
+    const loadLab = mk('label', 'display:block;margin-top:8px;font-size:12px;color:#ccc');
+    const loadChk = mk('input'); loadChk.type = 'checkbox'; loadChk.checked = rec ? !!rec.loadAll : false;
+    loadLab.append(loadChk, document.createTextNode(' Endless-scroll page: load everything first, then sort'));
+    panel.appendChild(loadLab);
 
     const scopeWrap = mk('div', 'margin-top:8px;font-size:12px;color:#ccc');
     scopeWrap.appendChild(mk('div', '', 'Remember for:'));
@@ -372,14 +456,22 @@
 
     const row = mk('div');
     row.append(
-      btn('Apply', () => {
+      btn('Apply', async () => {
         if (!state.container || !state.container.isConnected) state.container = resolveContainer();
         if (!state.container) return setStatus('No video list found on this page. Tap "Pick list", then tap one video in the list you want to sort.', true);
-        state.method = sel.value; state.paused = false; state.reapplies = [];
-        const st = sortItems(state.method);
-        if (!st) return setStatus('Couldn\u2019t sort this list.', true);
-        saveChoice(state.method, scopeVal());
-        showStats(st);
+        const method = sel.value;
+        saveChoice(method, scopeVal(), loadChk.checked);
+        if (loadChk.checked) {
+          setStatus('Loading everything first\u2026');
+          const { st, res } = await loadThenSort(method);
+          if (!st) return setStatus('Couldn\u2019t sort this list.', true);
+          showStats(st, res.reason);
+        } else {
+          state.method = method; state.paused = false; state.reapplies = [];
+          const st = sortItems(method);
+          if (!st) return setStatus('Couldn\u2019t sort this list.', true);
+          showStats(st);
+        }
       }, '#34c759'),
       btn('Pick list', () => {
         panel.style.display = 'none';
@@ -391,13 +483,17 @@
           panel.style.display = 'block';
           if (!el) return setStatus('That didn\u2019t look like a list of videos. Try tapping a thumbnail or title.', true);
           state.container = el; state.containerSel = cssPath(el); state.last = [];
-          const st = sortItems(state.method);
-          if (state.method !== 'orig') saveChoice(state.method, scopeVal());
+          sortItems(state.method);
+          if (state.method !== 'orig') saveChoice(state.method, scopeVal(), loadChk.checked);
           setStatus('List selected (' + itemsOf(el).length + ' videos). Choose a sort and tap Apply.' + (state.containerSel ? '' : '\n(Couldn\u2019t save this list for next time; it will be auto-detected.)'));
-          if (st) void st;
         });
       }),
-      btn('Load all', loadAll),
+      btn('Load all', async () => {
+        if (!state.container || !state.container.isConnected) state.container = resolveContainer();
+        if (!state.container) return setStatus('No video list found on this page. Tap "Pick list" first.', true);
+        const { st, res } = await loadThenSort(state.method);
+        if (st) showStats(st, res.reason);
+      }),
       btn('Reset', () => {
         state.method = 'orig';
         sortItems('orig');
@@ -419,16 +515,21 @@
   // ---------- auto-apply saved sort ----------
   (function init() {
     const rec = savedRecord();
-    if (!rec || !rec.method || rec.method === 'orig') return;
+    if (!rec || !rec.method) return;
+    if (rec.method === 'orig' && !rec.loadAll) return;
+
+    // Endless-scroll page: cover the page right away so the unsorted list is never shown
+    const ov = rec.loadAll ? showOverlay('Loading and sorting this page\u2026') : null;
     let tries = 0;
-    const t = setInterval(() => {
+    const t = setInterval(async () => {
       tries++;
       const c = resolveContainer();
       if (c) {
         clearInterval(t);
         state.container = c; state.method = rec.method;
-        sortItems(rec.method);
-      } else if (tries > 15) clearInterval(t);
+        if (rec.loadAll) await loadThenSort(rec.method, ov);
+        else sortItems(rec.method);
+      } else if (tries > 15) { clearInterval(t); if (ov) ov.close(); }
     }, 1000);
   })();
 })();
