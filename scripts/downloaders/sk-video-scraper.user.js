@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         SK Video Scraper & Downloader (Page + Whole Site)
 // @namespace    skgroups
-// @version      1.0
-// @description  Find video files on this page, or crawl the whole site (same domain only, polite, capped). Copy URLs or download.
+// @version      1.1
+// @description  Find video files on this page, or crawl the whole site (same domain only, polite, capped). Copy URLs or download. The button only appears on video playback pages.
 // @match        *://*/*
 // @noframes
 // @grant        none
@@ -11,6 +11,20 @@
 (function () {
   'use strict';
   if (window.top !== window.self) return;
+
+  // ----- show the widget only on a real video playback page -----
+  // A page counts as a video page if its address matches one of these patterns (tested against path + query),
+  // OR it has a large video player on screen. Edit the list if your sites use a different address.
+  const VIDEO_URL_PATTERNS = [/view_?video/i, /[?&]viewkey=/i, /\/watch(\/|\?|$)/i, /\/video\/[^/?#]+/i, /\/embed\//i];
+
+  function isVideoPage() {
+    const url = location.pathname + location.search;
+    if (VIDEO_URL_PATTERNS.some(re => re.test(url))) return true;
+    const vw = window.innerWidth || 800;
+    const big = el => { const r = el.getBoundingClientRect(); return r.width >= 240 && r.width >= vw * 0.4 && r.height >= 120; };
+    if ([...document.querySelectorAll('video')].some(big)) return true;
+    return [...document.querySelectorAll('iframe[src*="player" i],iframe[src*="embed" i]')].some(big);
+  }
 
   const CFG = {
     label: 'Videos',
@@ -291,5 +305,13 @@
 
   panel.append(bar, status, filter, opts, count, list);
   fab.onclick = () => { panel.style.display = 'flex'; };
-  document.documentElement.append(fab, panel);
+
+  // Add the widget only while this is a video playback page (re-checked as the page loads / navigates)
+  function syncUI() {
+    const on = isVideoPage();
+    if (on && !fab.isConnected) document.documentElement.append(fab, panel);
+    else if (!on && fab.isConnected) { fab.remove(); panel.remove(); panel.style.display = 'none'; }
+  }
+  syncUI();
+  setInterval(syncUI, 1500);
 })();
