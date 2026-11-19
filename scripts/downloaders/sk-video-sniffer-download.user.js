@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         SK Video Sniffer & Download
 // @namespace    skgroups
-// @version      1.0
-// @description  Watches network requests (fetch, XHR, resource timing, iframes) for video/audio files and stream manifests, and lists them so you can copy or download. DRM-protected streams can't be saved.
+// @version      1.1
+// @description  Watches network requests (fetch, XHR, resource timing, iframes) for video/audio files and stream manifests, and lists them so you can copy or download. DRM-protected streams can't be saved. The button only appears on video playback pages.
 // @match        *://*/*
 // @run-at       document-start
 // @grant        none
@@ -15,6 +15,20 @@
   const SEGMENT_RE = /\.(ts|m4s|cmfv|cmfa)(?:[?#]|$)/i;
   const TYPE_RE = /^(video\/|audio\/|application\/(vnd\.apple\.mpegurl|x-mpegurl|dash\+xml))/i;
   const isTop = window.top === window.self;
+
+  // ----- show the widget only on a real video playback page -----
+  // (Network sniffing still runs everywhere, in memory only, so requests made while the page loads aren't missed;
+  //  only the button/panel is limited to video pages.) Edit the list if your sites use a different address.
+  const VIDEO_URL_PATTERNS = [/view_?video/i, /[?&]viewkey=/i, /\/watch(\/|\?|$)/i, /\/video\/[^/?#]+/i, /\/embed\//i];
+
+  function isVideoPage() {
+    const url = location.pathname + location.search;
+    if (VIDEO_URL_PATTERNS.some(re => re.test(url))) return true;
+    const vw = window.innerWidth || 800;
+    const big = el => { const r = el.getBoundingClientRect(); return r.width >= 240 && r.width >= vw * 0.4 && r.height >= 120; };
+    if ([...document.querySelectorAll('video')].some(big)) return true;
+    return [...document.querySelectorAll('iframe[src*="player" i],iframe[src*="embed" i]')].some(big);
+  }
 
   function abs(u) { try { return new URL(u, location.href).href; } catch { return null; } }
 
@@ -144,6 +158,14 @@
     });
   }
 
+  // Add the widget only while this is a video playback page (re-checked as the page loads / navigates)
+  function syncUI() {
+    if (!fab) return;
+    const on = isVideoPage();
+    if (on && !fab.isConnected) document.documentElement.append(fab, panel);
+    else if (!on && fab.isConnected) { fab.remove(); panel.remove(); panel.style.display = 'none'; }
+  }
+
   function buildUI() {
     const slot = (window.__skFab = (window.__skFab || 0) + 1);
     fab = mk('button', 'position:fixed;left:12px;bottom:' + (12 + 50 * (slot - 1)) + 'px;z-index:2147483647;width:42px;height:42px;border-radius:50%;border:none;background:#111;color:#fff;font:600 11px -apple-system,sans-serif;opacity:.75;box-shadow:0 2px 8px rgba(0,0,0,.4)');
@@ -163,7 +185,8 @@
     list = mk('div', 'flex:1;overflow-y:auto;padding:12px');
     panel.append(bar, list);
     fab.onclick = () => { render(); panel.style.display = 'flex'; };
-    document.documentElement.append(fab, panel);
+    syncUI();
+    setInterval(syncUI, 1500);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', buildUI);
