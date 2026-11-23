@@ -1,0 +1,91 @@
+Number,File,Detector,Action,Description
+1,001_SK_MP4_video-src_anchor.user.js,video-src,anchor,Anchor download
+2,002_SK_MP4_video-src_fetch-blob.user.js,video-src,fetch-blob,Fetch to Blob
+3,003_SK_MP4_video-src_xhr-blob.user.js,video-src,xhr-blob,XHR to Blob
+4,004_SK_MP4_video-src_fetch-stream.user.js,video-src,fetch-stream,Stream via fetch to Blob
+5,005_SK_MP4_video-src_gm-download.user.js,video-src,gm-download,GM_download when supported
+6,006_SK_MP4_video-src_open.user.js,video-src,open,Open direct MP4 URL
+7,007_SK_MP4_video-src_copy.user.js,video-src,copy,Copy direct MP4 URL
+8,008_SK_MP4_video-src_share.user.js,video-src,share,Share MP4 URL using Web Share
+9,009_SK_MP4_video-src_preview.user.js,video-src,preview,Preview MP4 in video element
+10,010_SK_MP4_video-source_anchor.user.js,video-source,anchor,Anchor download
+11,011_SK_MP4_video-source_fetch-blob.user.js,video-source,fetch-blob,Fetch to Blob
+12,012_SK_MP4_video-source_xhr-blob.user.js,video-source,xhr-blob,XHR to Blob
+13,013_SK_MP4_video-source_fetch-stream.user.js,video-source,fetch-stream,Stream via fetch to Blob
+14,014_SK_MP4_video-source_gm-download.user.js,video-source,gm-download,GM_download when supported
+15,015_SK_MP4_video-source_open.user.js,video-source,open,Open direct MP4 URL
+16,016_SK_MP4_video-source_copy.user.js,video-source,copy,Copy direct MP4 URL
+17,017_SK_MP4_video-source_share.user.js,video-source,share,Share MP4 URL using Web Share
+18,018_SK_MP4_video-source_preview.user.js,video-source,preview,Preview MP4 in video element
+19,019_SK_MP4_source-type_anchor.user.js,source-type,anchor,Anchor download
+20,020_SK_MP4_source-type_fetch-blob.user.js,source-type,fetch-blob,Fetch to Blob
+21,021_SK_MP4_source-type_xhr-blob.user.js,source-type,xhr-blob,XHR to Blob
+22,022_SK_MP4_source-type_fetch-stream.user.js,source-type,fetch-stream,Stream via fetch to Blob
+23,023_SK_MP4_source-type_gm-download.user.js,source-type,gm-download,GM_download when supported
+24,024_SK_MP4_source-type_open.user.js,source-type,open,Open direct MP4 URL
+25,025_SK_MP4_source-type_copy.user.js,source-type,copy,Copy direct MP4 URL
+26,026_SK_MP4_source-type_share.user.js,source-type,share,Share MP4 URL using Web Share
+27,027_SK_MP4_source-type_preview.user.js,source-type,preview,Preview MP4 in video element
+28,028_SK_MP4_video-current_anchor.user.js,video-current,anchor,Anchor download
+29,029_SK_MP4_video-current_fetch-blob.user.js,video-current,fetch-blob,Fetch to Blob
+30,030_SK_MP4_video-current_xhr-blob.user.js,video-current,xhr-blob,XHR to Blob
+31,031_SK_MP4_video-current_fetch-stream.user.js,video-current,fetch-stream,Stream via fetch to Blob
+32,032_SK_MP4_video-current_gm-download.user.js,video-current,gm-download,GM_download when supported
+33,033_SK_MP4_video-current_open.user.js,video-current,open,Open direct MP4 URL
+34,034_SK_MP4_video-current_copy.user.js,video-current,copy,Copy direct MP4 URL
+35,035_SK_MP4_video-current_share.user.js,video-current,share,Share MP4 URL using Web Share
+36,036_SK_MP4_video-current_preview.user.js,video-current,preview,Preview MP4 in video element
+37,037_SK_MP4_video-poster-neighbor_anchor.user.js,video-poster-neighbor,anchor,Anchor download
+38,038_SK_MP4_video-poster-neighbor_fetch-blob.user.js,video-poster-neighbor,fetch-blob,Fetch to Blob
+39,039_SK_MP4_video-poster-neighbor_xhr-blob.user.js,video-poster-neighbor,xhr-blob,XHR to Blob
+40,040_SK_MP4_video-poster-neighbor_fetch-stream.user.js,video-poster-neighbor,fetch-stream,Stream via fetch to Blob
+41,041_SK_MP4_video-poster-neighbor_gm-download.user.js,video-poster-neighbor,gm-download,GM_download when supported
+42,042_SK_MP4_video-poster-neighbor_open.user.js,video-poster-neighbor,open,Open direct MP4 URL
+43,043_SK_MP4_video-poster-neighbor_copy.user.js,video-poster-neighbor,copy,Copy direct MP4 URL
+44,044_SK_MP4_video-poster-neighbor_share.user.js,video-poster-neighbor,share,Share MP4 URL using Web Share
+45,045_SK_MP4_video-poster-neighbor_preview.user.js,video-poster-neighbor,preview,Preview MP4 in video element
+46,046_SK_MP4_anchor-mp4_anchor.user.js,anchor-mp4,anchor,Anchor download
+47,047_SK_MP4_anchor-mp4_fetch-blob.user.js,anchor-mp4,fetch-blob,Fetch to Blob
+48,048_SK_MP4_anchor-mp4_xhr-blob.user.js,anchor-mp4,xhr-blob,XHR to Blob
+49,049_SK_MP4_anchor-mp4_fetch-stream.user.js,anchor-mp4,fetch-stream,Stream via fetch to Blob
+50,050_SK_MP4_anchor-mp4_gm-download.user.js,anchor-mp4,gm-download,GM_download when supported
+51,051_SK_MP4_anchor-mp4_open.user.js,anchor-mp4,open,Open direct MP4 URL
+52,052_SK_MP4_anchor-mp4_copy.user.js,anchor-mp4,copy,Copy direct MP4 URL
+53,053_SK_MP4_anchor-mp4_share.user.js,anchor-mp4,share,Share MP4 URL using Web Share
+54,054_SK_MP4_anchor-mp4_preview.user.js,anchor-mp4,preview,Preview MP4 in video element
+55,055_SK_MP4_data-src_anchor.user.js,data-src,anchor,Anchor download
+56,056_SK_MP4_data-src_fetch-blob.user.js,data-src,fetch-blob,Fetch to Blob
+57,057_SK_MP4_data-src_xhr-blob.user.js,data-src,xhr-blob,XHR to Blob
+58,058_SK_MP4_data-src_fetch-stream.user.js,data-src,fetch-stream,Stream via fetch to Blob
+59,059_SK_MP4_data-src_gm-download.user.js,data-src,gm-download,GM_download when supported
+60,060_SK_MP4_data-src_open.user.js,data-src,open,Open direct MP4 URL
+61,061_SK_MP4_data-src_copy.user.js,data-src,copy,Copy direct MP4 URL
+62,062_SK_MP4_data-src_share.user.js,data-src,share,Share MP4 URL using Web Share
+63,063_SK_MP4_data-src_preview.user.js,data-src,preview,Preview MP4 in video element
+64,064_SK_MP4_data-video_anchor.user.js,data-video,anchor,Anchor download
+65,065_SK_MP4_data-video_fetch-blob.user.js,data-video,fetch-blob,Fetch to Blob
+66,066_SK_MP4_data-video_xhr-blob.user.js,data-video,xhr-blob,XHR to Blob
+67,067_SK_MP4_data-video_fetch-stream.user.js,data-video,fetch-stream,Stream via fetch to Blob
+68,068_SK_MP4_data-video_gm-download.user.js,data-video,gm-download,GM_download when supported
+69,069_SK_MP4_data-video_open.user.js,data-video,open,Open direct MP4 URL
+70,070_SK_MP4_data-video_copy.user.js,data-video,copy,Copy direct MP4 URL
+71,071_SK_MP4_data-video_share.user.js,data-video,share,Share MP4 URL using Web Share
+72,072_SK_MP4_data-video_preview.user.js,data-video,preview,Preview MP4 in video element
+73,073_SK_MP4_meta-video_anchor.user.js,meta-video,anchor,Anchor download
+74,074_SK_MP4_meta-video_fetch-blob.user.js,meta-video,fetch-blob,Fetch to Blob
+75,075_SK_MP4_meta-video_xhr-blob.user.js,meta-video,xhr-blob,XHR to Blob
+76,076_SK_MP4_meta-video_fetch-stream.user.js,meta-video,fetch-stream,Stream via fetch to Blob
+77,077_SK_MP4_meta-video_gm-download.user.js,meta-video,gm-download,GM_download when supported
+78,078_SK_MP4_meta-video_open.user.js,meta-video,open,Open direct MP4 URL
+79,079_SK_MP4_meta-video_copy.user.js,meta-video,copy,Copy direct MP4 URL
+80,080_SK_MP4_meta-video_share.user.js,meta-video,share,Share MP4 URL using Web Share
+81,081_SK_MP4_meta-video_preview.user.js,meta-video,preview,Preview MP4 in video element
+82,082_SK_MP4_performance_anchor.user.js,performance,anchor,Anchor download
+83,083_SK_MP4_performance_fetch-blob.user.js,performance,fetch-blob,Fetch to Blob
+84,084_SK_MP4_performance_xhr-blob.user.js,performance,xhr-blob,XHR to Blob
+85,085_SK_MP4_performance_fetch-stream.user.js,performance,fetch-stream,Stream via fetch to Blob
+86,086_SK_MP4_performance_gm-download.user.js,performance,gm-download,GM_download when supported
+87,087_SK_MP4_performance_open.user.js,performance,open,Open direct MP4 URL
+88,088_SK_MP4_performance_copy.user.js,performance,copy,Copy direct MP4 URL
+89,089_SK_MP4_performance_share.user.js,performance,share,Share MP4 URL using Web Share
+90,090_SK_MP4_performance_preview.user.js,performance,preview,Preview MP4 in video element
