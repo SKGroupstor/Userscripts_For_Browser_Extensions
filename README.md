@@ -4,11 +4,13 @@ Small userscripts for Violentmonkey / Tampermonkey (Chrome, Edge, Firefox) and S
 
 ## Install
 
-1. Install a userscript manager (Violentmonkey, Tampermonkey, or Stay on Safari).
-2. Open a script on GitHub and click **Raw**. The manager offers to install it. (Or copy the code and paste it into a new script.)
-3. Reload the page you want to use it on.
+Every script has an install link in [INSTALL.md](INSTALL.md).
 
-Most scripts add one small round button on the left edge of the page. `general/sk-hide-in-print` hides all of them when you print.
+- **Stay:** copy a link (long-press, Copy Link) and add it as a script by URL.
+- **Violentmonkey / Tampermonkey:** open the link and confirm, or use "Install from URL".
+- **Updates:** scripts installed from these links check for newer versions on their own.
+
+Install only the scripts you need. Most add one small round button on the left edge of the page. `general/sk-hide-in-print` hides all of them when you print.
 
 Use at your own risk, and only download or copy video and files you have the right to. DRM-protected streams can't be saved and these scripts don't try.
 
@@ -21,7 +23,7 @@ scripts/
   video/          video sorter and keyboard shortcuts
   downloaders/    video, file and image downloaders / scrapers
     mp4-matrix/   90 single-purpose MP4 variants (see its README and INDEX.csv)
-    archive/      older, overlapping HLS scripts kept for reference
+    archive/      earlier HLS scripts kept for reference
   sites/
     amazon/       Amazon product pages and Seller Central helpers
     shipping/     Canada Post, FedEx and tracking-number helpers
@@ -66,11 +68,9 @@ scripts/
 
 ## Downloaders (`scripts/downloaders/`)
 
-These show their button only on video playback pages (address patterns are listed at the top of each script).
-
 | Script | What it does |
 | --- | --- |
-| `sk-universal-video-controller-v4` | One button for direct MP4 and compatible HLS streams, with player detection |
+| `sk-universal-video-controller-v4` | One button that picks the right method for direct MP4 and compatible HLS streams, with player detection |
 | `sk-html-video-download` | Lists each `<video>` on the page and downloads it with a progress readout |
 | `sk-video-sniffer-download` | Watches network requests for video/audio files and stream manifests |
 | `sk-video-scraper` | Finds video files on this page or crawls the site (same domain only) |
@@ -89,4 +89,4 @@ Site crawls stay on one domain, read `robots.txt` and the sitemap, fetch slowly 
 
 These read the live page structure, so a site redesign can break a selector. Each script's header describes what it expects.
 
-**Google Sheet export (`sk-seller-central-order-copy`, `sk-product-glossary`):** create a Google Form whose short-answer questions are titled as listed in the script's header, link it to a Sheet, copy the form's pre-filled link, and paste it into the script's setup button. Keep your own form link private.
+**Google Sheet export (`sk-seller-central-order-copy`, `sk-product-glossary`):** create a Google Form whose short-answer questions are titled as listed in the script's header, link it to a Sheet, copy the form's pre-filled link, and paste it into the script's setup button. Keep your own form link private. `sk-seller-central-order-copy` has no auto-update header, so a private copy with your own connection details isn't overwritten.
