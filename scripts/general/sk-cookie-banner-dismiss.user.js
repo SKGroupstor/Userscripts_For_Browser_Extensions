@@ -6,6 +6,8 @@
 // @match        *://*/*
 // @noframes
 // @grant        none
+// @updateURL    https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/general/sk-cookie-banner-dismiss.user.js
+// @downloadURL  https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/general/sk-cookie-banner-dismiss.user.js
 // ==/UserScript==
 
 (function () {

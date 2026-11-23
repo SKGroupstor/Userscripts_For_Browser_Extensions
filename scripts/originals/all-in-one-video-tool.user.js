@@ -5,6 +5,8 @@
 // @description  Speed, play/pause, PiP, and download for HTML5 videos
 // @match        *://*/*
 // @grant        none
+// @updateURL    https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/originals/all-in-one-video-tool.user.js
+// @downloadURL  https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/originals/all-in-one-video-tool.user.js
 // ==/UserScript==
 
 (function () {

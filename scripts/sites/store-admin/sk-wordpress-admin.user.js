@@ -7,6 +7,8 @@
 // @match        *://*/wp-login.php*
 // @noframes
 // @grant        none
+// @updateURL    https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/sites/store-admin/sk-wordpress-admin.user.js
+// @downloadURL  https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/sites/store-admin/sk-wordpress-admin.user.js
 // ==/UserScript==
 
 (function () {

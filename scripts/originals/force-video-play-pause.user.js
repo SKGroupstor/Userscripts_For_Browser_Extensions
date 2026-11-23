@@ -5,6 +5,8 @@
 // @description  Adds play/pause button for videos
 // @match        *://*/*
 // @grant        none
+// @updateURL    https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/originals/force-video-play-pause.user.js
+// @downloadURL  https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/originals/force-video-play-pause.user.js
 // ==/UserScript==
 
 (function () {

@@ -5,6 +5,8 @@
 // @description  Keyboard control for any HTML5 video: ] / [ speed, \ reset, Shift+Arrows seek 10s, Shift+M mute, Shift+P picture-in-picture
 // @match        *://*/*
 // @grant        none
+// @updateURL    https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/video/sk-video-hotkeys.user.js
+// @downloadURL  https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/video/sk-video-hotkeys.user.js
 // ==/UserScript==
 
 (function () {

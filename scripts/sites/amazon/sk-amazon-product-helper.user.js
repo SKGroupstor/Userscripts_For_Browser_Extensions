@@ -9,6 +9,8 @@
 // @match        *://amazon.com/*
 // @noframes
 // @grant        none
+// @updateURL    https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/sites/amazon/sk-amazon-product-helper.user.js
+// @downloadURL  https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/sites/amazon/sk-amazon-product-helper.user.js
 // ==/UserScript==
 
 (function () {

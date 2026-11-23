@@ -5,6 +5,8 @@
 // @description  Clicks "Skip" on YouTube video ads as soon as it appears and fast-forwards unskippable ones
 // @match        *://*.youtube.com/*
 // @grant        none
+// @updateURL    https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/general/sk-youtube-ad-skipper.user.js
+// @downloadURL  https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/general/sk-youtube-ad-skipper.user.js
 // ==/UserScript==
 
 (function () {

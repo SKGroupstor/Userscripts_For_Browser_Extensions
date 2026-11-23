@@ -10,6 +10,8 @@
 // @resource     pdfWorker https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js
 // @grant        GM_getResourceText
 // @grant        unsafeWindow
+// @updateURL    https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/sites/shipping/sk-canadapost-label-pdf.user.js
+// @downloadURL  https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/sites/shipping/sk-canadapost-label-pdf.user.js
 // ==/UserScript==
 
 // HOW TO USE

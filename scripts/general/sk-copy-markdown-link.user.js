@@ -6,6 +6,8 @@
 // @match        *://*/*
 // @noframes
 // @grant        none
+// @updateURL    https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/general/sk-copy-markdown-link.user.js
+// @downloadURL  https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/general/sk-copy-markdown-link.user.js
 // ==/UserScript==
 
 (function () {

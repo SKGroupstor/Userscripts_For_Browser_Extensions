@@ -6,6 +6,8 @@
 // @match        *://*/*
 // @noframes
 // @grant        none
+// @updateURL    https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/sites/shipping/sk-tracking-detector.user.js
+// @downloadURL  https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/sites/shipping/sk-tracking-detector.user.js
 // ==/UserScript==
 
 // Detection is by number pattern, so results are labelled "possible" unless the carrier's name appears nearby.

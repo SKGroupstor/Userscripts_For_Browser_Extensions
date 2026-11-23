@@ -8,6 +8,8 @@
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        unsafeWindow
+// @updateURL    https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/productivity/sk-text-snippets.user.js
+// @downloadURL  https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/productivity/sk-text-snippets.user.js
 // ==/UserScript==
 
 // Snippets are stored with GM_getValue/GM_setValue, so they are shared across all sites in this browser profile.

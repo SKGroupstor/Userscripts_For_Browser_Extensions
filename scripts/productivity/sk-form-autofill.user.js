@@ -8,6 +8,8 @@
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        unsafeWindow
+// @updateURL    https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/productivity/sk-form-autofill.user.js
+// @downloadURL  https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/productivity/sk-form-autofill.user.js
 // ==/UserScript==
 
 // Profiles are stored with GM_getValue/GM_setValue so they are shared across all sites.

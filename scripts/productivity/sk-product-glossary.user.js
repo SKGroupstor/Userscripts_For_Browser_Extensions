@@ -11,6 +11,8 @@
 // @grant        unsafeWindow
 // @connect      docs.google.com
 // @connect      *
+// @updateURL    https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/productivity/sk-product-glossary.user.js
+// @downloadURL  https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/productivity/sk-product-glossary.user.js
 // ==/UserScript==
 
 // Storage uses GM_getValue/GM_setValue so the glossary is shared across ALL sites

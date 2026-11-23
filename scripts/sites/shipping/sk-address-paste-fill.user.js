@@ -8,6 +8,8 @@
 // @match        *://*.fedex.com/*
 // @noframes
 // @grant        none
+// @updateURL    https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/sites/shipping/sk-address-paste-fill.user.js
+// @downloadURL  https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/sites/shipping/sk-address-paste-fill.user.js
 // ==/UserScript==
 
 // HOW TO USE

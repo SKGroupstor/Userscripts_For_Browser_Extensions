@@ -6,6 +6,8 @@
 // @match        *://*/*
 // @run-at       document-start
 // @grant        none
+// @updateURL    https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/downloaders/sk-video-sniffer-download.user.js
+// @downloadURL  https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/downloaders/sk-video-sniffer-download.user.js
 // ==/UserScript==
 
 (function () {

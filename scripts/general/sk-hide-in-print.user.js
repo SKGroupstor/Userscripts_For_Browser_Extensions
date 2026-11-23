@@ -6,6 +6,8 @@
 // @match        *://*/*
 // @run-at       document-start
 // @grant        none
+// @updateURL    https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/general/sk-hide-in-print.user.js
+// @downloadURL  https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/general/sk-hide-in-print.user.js
 // ==/UserScript==
 
 // Every SK script marks its UI with data-sk, so this one rule covers all of them

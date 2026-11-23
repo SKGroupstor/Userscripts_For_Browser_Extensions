@@ -7,6 +7,8 @@
 // @match        *://sellercentral.amazon.com/orders-v3/*
 // @noframes
 // @grant        none
+// @updateURL    https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/sites/amazon/sk-seller-central-ship-by-badge.user.js
+// @downloadURL  https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/sites/amazon/sk-seller-central-ship-by-badge.user.js
 // ==/UserScript==
 
 (function () {

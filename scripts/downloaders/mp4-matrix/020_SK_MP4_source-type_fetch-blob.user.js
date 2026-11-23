@@ -6,6 +6,8 @@
 // @match        *://*/*
 // @run-at       document-idle
 // @grant        GM_download
+// @updateURL    https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/downloaders/mp4-matrix/020_SK_MP4_source-type_fetch-blob.user.js
+// @downloadURL  https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/downloaders/mp4-matrix/020_SK_MP4_source-type_fetch-blob.user.js
 // ==/UserScript==
 (() => {
 'use strict';

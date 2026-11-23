@@ -5,6 +5,8 @@
 // @description  Adds PiP button to videos
 // @match        *://*/*
 // @grant        none
+// @updateURL    https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/originals/picture-in-picture.user.js
+// @downloadURL  https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/originals/picture-in-picture.user.js
 // ==/UserScript==
 
 (function () {

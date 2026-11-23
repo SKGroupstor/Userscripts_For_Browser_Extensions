@@ -11,6 +11,8 @@
 // @match        *://*.safetypluspro.com/*
 // @noframes
 // @grant        none
+// @updateURL    https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/sites/store-admin/sk-supplier-product-helper.user.js
+// @downloadURL  https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/sites/store-admin/sk-supplier-product-helper.user.js
 // ==/UserScript==
 
 // NOTE: the Safety Plus Pro domain above is a best guess - edit the two @match lines if the real domain differs.

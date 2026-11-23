@@ -5,6 +5,8 @@
 // @description  Adds a download button for direct HTML5 video files. The button only appears on video playback pages.
 // @match        *://*/*
 // @grant        none
+// @updateURL    https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/originals/download-current-video.user.js
+// @downloadURL  https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/originals/download-current-video.user.js
 // ==/UserScript==
 
 (function () {

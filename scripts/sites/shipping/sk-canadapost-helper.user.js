@@ -7,6 +7,8 @@
 // @match        *://*.canadapost.ca/*
 // @noframes
 // @grant        none
+// @updateURL    https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/sites/shipping/sk-canadapost-helper.user.js
+// @downloadURL  https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/sites/shipping/sk-canadapost-helper.user.js
 // ==/UserScript==
 
 (function () {

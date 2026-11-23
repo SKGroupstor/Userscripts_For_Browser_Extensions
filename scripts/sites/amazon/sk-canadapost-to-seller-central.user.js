@@ -11,6 +11,8 @@
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        unsafeWindow
+// @updateURL    https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/sites/amazon/sk-canadapost-to-seller-central.user.js
+// @downloadURL  https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/sites/amazon/sk-canadapost-to-seller-central.user.js
 // ==/UserScript==
 
 // HOW IT WORKS

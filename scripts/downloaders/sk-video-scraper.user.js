@@ -6,6 +6,8 @@
 // @match        *://*/*
 // @noframes
 // @grant        none
+// @updateURL    https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/downloaders/sk-video-scraper.user.js
+// @downloadURL  https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/downloaders/sk-video-scraper.user.js
 // ==/UserScript==
 
 (function () {

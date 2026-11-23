@@ -6,6 +6,8 @@
 // @match        *://merchants.google.com/*
 // @noframes
 // @grant        none
+// @updateURL    https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/sites/store-admin/sk-merchant-center-helper.user.js
+// @downloadURL  https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/sites/store-admin/sk-merchant-center-helper.user.js
 // ==/UserScript==
 
 (function () {

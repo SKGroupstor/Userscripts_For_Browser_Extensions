@@ -7,6 +7,8 @@
 // @match        *://sellercentral.amazon.com/*
 // @noframes
 // @grant        none
+// @updateURL    https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/sites/amazon/sk-seller-central-table-copy.user.js
+// @downloadURL  https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/sites/amazon/sk-seller-central-table-copy.user.js
 // ==/UserScript==
 
 // Copies only what is loaded on screen (long lists load more rows as you scroll, so scroll first).

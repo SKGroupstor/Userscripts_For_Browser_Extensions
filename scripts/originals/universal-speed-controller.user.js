@@ -5,6 +5,8 @@
 // @description  Adds video speed buttons to most websites
 // @match        *://*/*
 // @grant        none
+// @updateURL    https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/originals/universal-speed-controller.user.js
+// @downloadURL  https://raw.githubusercontent.com/SKGroupstor/Userscripts_For_Browser_Extensions/main/scripts/originals/universal-speed-controller.user.js
 // ==/UserScript==
 
 (function () {
