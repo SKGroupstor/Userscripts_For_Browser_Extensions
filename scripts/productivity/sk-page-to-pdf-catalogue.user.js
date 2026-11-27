@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SK Page to PDF Catalogue
 // @namespace    skgroups
-// @version      1.0
+// @version      1.1
 // @description  Scrapes the products on any store/listing page (optionally following "next page" links or scrolling) and builds a printable PDF catalogue or net sheet with images, SKU and prices. Optional price adjustment for net pricing. Shows a "PDF" button on pages that look like product listings.
 // @match        *://*/*
 // @noframes
@@ -16,7 +16,7 @@
 
 // HOW IT WORKS
 //  1. Open any page that lists products (a shop category, search results, a distributor price page...).
-//  2. A blue "PDF" button appears bottom-left when the page looks like a product list.
+//  2. A blue "PDF" button appears bottom-right when the page looks like a product list.
 //     On other pages press Alt+Shift+P, or use the Violentmonkey menu item "Catalogue PDF".
 //  3. Tap it. Tick which products to include, pick Catalogue (cards) or Net sheet (table).
 //     "Scan all pages" follows the site's Next link (up to the page limit you set).
@@ -25,6 +25,7 @@
 //     If the print dialog doesn't appear by itself, tap the Print button at the top of that page.
 //  Price adjust %: e.g. -20 adds a "Net price" column at 20% off the list price; 15 is a 15% markup.
 //  The script only reads pages. Nothing is sent anywhere.
+//  v1.1: button and panel sit on the bottom-right (the other SK scripts stack on the left).
 
 (function () {
   'use strict';
@@ -385,8 +386,8 @@
   function buildUI() {
     if (uiReady) return;
     uiReady = true;
-    const slot = (W.__skFab = (W.__skFab || 0) + 1);
-    panel = mk('div', 'position:fixed;left:12px;right:12px;bottom:' + (12 + 50 * (slot - 1) + 50) + 'px;max-width:460px;max-height:80vh;overflow-y:auto;background:#111;color:#fff;border-radius:12px;padding:12px;display:none;z-index:2147483647;font:14px -apple-system,sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.5)');
+    const slot = (W.__skFabR = (W.__skFabR || 0) + 1);
+    panel = mk('div', 'position:fixed;left:12px;right:12px;margin-left:auto;bottom:' + (12 + 50 * (slot - 1) + 50) + 'px;max-width:460px;max-height:80vh;overflow-y:auto;background:#111;color:#fff;border-radius:12px;padding:12px;display:none;z-index:2147483647;font:14px -apple-system,sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.5)');
     panel.setAttribute('data-sk', '1');
     panel.appendChild(mk('div', 'font-weight:700;margin-bottom:4px', 'Page to PDF catalogue'));
 
@@ -424,7 +425,7 @@
     status = mk('div', 'font-size:12px;color:#34c759;margin-top:8px;min-height:15px;line-height:1.4');
     panel.appendChild(status);
 
-    fab = mk('button', 'position:fixed;left:12px;bottom:' + (12 + 50 * (slot - 1)) + 'px;z-index:2147483647;width:42px;height:42px;border-radius:50%;border:none;background:#0a84ff;color:#fff;font:700 11px -apple-system,sans-serif;opacity:.92;box-shadow:0 2px 8px rgba(0,0,0,.4)', 'PDF');
+    fab = mk('button', 'position:fixed;right:12px;bottom:' + (12 + 50 * (slot - 1)) + 'px;z-index:2147483647;width:42px;height:42px;border-radius:50%;border:none;background:#0a84ff;color:#fff;font:700 11px -apple-system,sans-serif;opacity:.92;box-shadow:0 2px 8px rgba(0,0,0,.4)', 'PDF');
     fab.setAttribute('data-sk', '1');
     fab.title = 'Make a PDF catalogue / net sheet from this page';
     fab.onclick = toggle;
